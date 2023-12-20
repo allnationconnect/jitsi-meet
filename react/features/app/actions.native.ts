@@ -1,3 +1,4 @@
+import { setPermanentProperty } from '../analytics/actions';
 import { setRoom } from '../base/conference/actions';
 import { getConferenceState } from '../base/conference/functions';
 import {
@@ -168,6 +169,12 @@ export function appNavigate(uri?: string, options: IReloadNowOptions = {}) {
                 navigateRoot(screen.unsafeRoomWarning);
             } else {
                 navigateRoot(screen.preJoin);
+
+                // On mobile the {@link isPrejoinPageVisible} will always return false. This is the first place we
+                // currently know that the prejoin has been displayed.
+                dispatch(setPermanentProperty({
+                    wasPrejoinDisplayed: true
+                }));
             }
         } else {
             dispatch(connect());

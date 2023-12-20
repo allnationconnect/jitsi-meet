@@ -1,3 +1,5 @@
+import { batch } from 'react-redux';
+
 import { IReduxState } from '../app/types';
 import {
     CONFERENCE_JOINED,
@@ -5,7 +7,6 @@ import {
     SET_ROOM
 } from '../base/conference/actionTypes';
 import { SET_CONFIG } from '../base/config/actionTypes';
-import { analytics } from '../base/lib-jitsi-meet';
 import { SET_NETWORK_INFO } from '../base/net-info/actionTypes';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import {
@@ -23,7 +24,8 @@ import { I_AM_VISITOR_MODE } from '../visitors/actionTypes';
 import { iAmVisitor } from '../visitors/functions';
 
 import { createLocalTracksDurationEvent, createNetworkInfoEvent } from './AnalyticsEvents';
-import { UPDATE_LOCAL_TRACKS_DURATION } from './actionTypes';
+import { CLEAR_INITIAL_PERMANENT_PROPERTIES, SET_INITIALIZED, UPDATE_LOCAL_TRACKS_DURATION } from './actionTypes';
+import { setPermanentProperty } from './actions';
 import { createHandlers, initAnalytics, resetAnalytics, sendAnalytics } from './functions';
 
 /**
@@ -91,10 +93,10 @@ MiddlewareRegistry.register(store => next => action => {
         const result = next(action);
         const newIAmVisitor = iAmVisitor(store.getState());
 
-        analytics.addPermanentProperties({
+        store.dispatch(setPermanentProperty({
             isVisitor: newIAmVisitor,
             isPromotedFromVisitor: oldIAmVisitor && !newIAmVisitor
-        });
+        }));
 
         return result;
     }
@@ -104,6 +106,16 @@ MiddlewareRegistry.register(store => next => action => {
             // the user will be redirected to another page and new instance of
             // Analytics will be created and initialized.
             resetAnalytics();
+
+            const { dispatch } = store;
+
+            batch(() => {
+                dispatch({
+                    type: SET_INITIALIZED,
+                    value: false
+                });
+                dispatch({ type: CLEAR_INITIAL_PERMANENT_PROPERTIES });
+            });
         }
         break;
     case SET_ROOM: {
@@ -114,7 +126,12 @@ MiddlewareRegistry.register(store => next => action => {
         const result = next(action);
 
         createHandlersPromise.then(handlers => {
-            initAnalytics(store, handlers);
+            if (initAnalytics(store, handlers)) {
+                store.dispatch({
+                    type: SET_INITIALIZED,
+                    value: true
+                });
+            }
         });
 
         return result;
@@ -163,9 +180,9 @@ MiddlewareRegistry.register(store => next => action => {
     }
     case SET_LOBBY_VISIBILITY:
         if (getIsLobbyVisible(store.getState())) {
-            analytics.addPermanentProperties({
+            store.dispatch(setPermanentProperty({
                 wasLobbyVisible: true
-            });
+            }));
         }
 
         break;
