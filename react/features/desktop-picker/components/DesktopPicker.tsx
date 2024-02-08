@@ -127,12 +127,6 @@ class DesktopPicker extends PureComponent<IProps, IState> {
         types: []
     };
 
-    /**
-     * Stores the type of the selected tab.
-     *
-     * @type {string}
-     */
-    _selectedTabType = DEFAULT_TAB_TYPE;
 
     /**
      * Initializes a new DesktopPicker instance.
@@ -185,6 +179,7 @@ class DesktopPicker extends PureComponent<IProps, IState> {
 
         return (
             <Dialog
+                className = 'desktop-picker'
                 ok = {{
                     disabled: Boolean(!this.state.selectedSource.id),
                     translationKey: 'dialog.Share'
@@ -226,14 +221,14 @@ class DesktopPicker extends PureComponent<IProps, IState> {
      * @returns {Object} The selectedSource value.
      */
     _getSelectedSource(sources: any = {}) {
-        const { selectedSource } = this.state;
+        const { selectedSource, selectedTab } = this.state;
 
         /**
          * If there are no sources for this type (or no sources for any type)
          * we can't select anything.
          */
-        if (!Array.isArray(sources[this._selectedTabType as keyof typeof sources])
-            || sources[this._selectedTabType as keyof typeof sources].length <= 0) {
+        if (!Array.isArray(sources[selectedTab as keyof typeof sources])
+            || sources[selectedTab as keyof typeof sources].length <= 0) {
             return {};
         }
 
@@ -245,12 +240,12 @@ class DesktopPicker extends PureComponent<IProps, IState> {
          * 3) The selected source is no longer available.
          */
         if (!selectedSource // scenario 1)
-                || selectedSource.type !== this._selectedTabType // scenario 2)
-                || !sources[this._selectedTabType].some( // scenario 3)
+                || selectedSource.type !== selectedTab // scenario 2)
+                || !sources[selectedTab].some( // scenario 3)
                         (source: any) => source.id === selectedSource.id)) {
             return {
-                id: sources[this._selectedTabType][0].id,
-                type: this._selectedTabType
+                id: sources[selectedTab][0].id,
+                type: selectedTab
             };
         }
 

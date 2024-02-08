@@ -1,14 +1,29 @@
+.desktop-picker {
+    position: relative;
+
+    .desktop-picker-pane-audio {
+        background: transparent;
+        position: absolute;
+        padding: 24px;
+        height: 40px;
+        bottom: 0;
+        left: 0;
+    }
+}
 .desktop-picker-pane {
     height: 320px;
     overflow-x: hidden;
     overflow-y: auto;
     width: 100%;
+    padding-bottom: 36px;
+
 
     &.source-type-screen {
         .desktop-picker-source {
-            margin-left: auto;
-            margin-right: auto;
-            width: 50%;
+            margin-left: 2px;
+            margin-right: 2px;
+            float: left;
+            width: 48%;
         }
 
         .desktop-source-preview-thumbnail {
@@ -40,10 +55,8 @@
     text-align: center;
 
     &.is-selected {
-        .desktop-source-preview-image-container {
-            background: rgba(255,255,255,0.3);
-            border-radius: $borderRadius;
-        }
+        background: rgb(36, 111, 229);
+        border-radius: $borderRadius;
     }
 }
 
