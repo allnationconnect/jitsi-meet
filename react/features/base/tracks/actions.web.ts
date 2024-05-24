@@ -159,7 +159,14 @@ async function _toggleScreenSharing(
     const enable = audioOnly
         ? enabled ?? !audioOnlySharing
         : enabled ?? !screenSharing;
-    const screensharingDetails: { sourceType?: string; } = {};
+    const screensharingDetails: {
+        audioOnly?: boolean;
+        audioSharing?: boolean;
+        sourceType?: string;
+    } = {
+        audioOnly: false,
+        audioSharing: false
+    };
 
     if (enable) {
         let tracks;
@@ -200,6 +207,8 @@ async function _toggleScreenSharing(
 
                 throw new Error(AUDIO_ONLY_SCREEN_SHARE_NO_TRACK);
             }
+            screensharingDetails.audioOnly = true;
+            screensharingDetails.audioSharing = true;
         } else if (desktopVideoTrack) {
             if (localScreenshare) {
                 await dispatch(replaceLocalTrack(localScreenshare.jitsiTrack, desktopVideoTrack, conference));
@@ -227,6 +236,7 @@ async function _toggleScreenSharing(
                     JitsiTrackEvents.LOCAL_TRACK_STOPPED,
                     () => dispatch(toggleScreensharing(undefined, true)));
             }
+            screensharingDetails.audioSharing = true;
         }
 
         // Show notification about more bandwidth usage in audio-only mode if the user starts screensharing. This
